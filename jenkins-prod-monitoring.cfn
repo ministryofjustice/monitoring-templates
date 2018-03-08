@@ -38,7 +38,7 @@ Resources:
       MetricName: DiskSpaceUtilization
       Statistic: Average
       Period: '60'
-      EvaluationPeriods: '10'
+      EvaluationPeriods: '1'
       Threshold: '95'
       TreatMissingData: notBreaching
       AlarmActions:
