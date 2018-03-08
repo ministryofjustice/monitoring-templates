@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: MoJ Jenkins Monitoring
+Parameters:
+  HighPrioritySNSarn:
+    Type: String
+    Description: Enter the arn of the high priority sns topic
+  LowPrioritySNSarn:
+    Type: String
+    Description: Enter the arn of the low priority sns topic
+  MountPath:
+    Type: String
+    Default: /
+    Description: FS mount path to monitor
+  InstanceId:
+    Type: String
+    Default: i-30734fbc
+    Description: Instance ID to monitor
+  Filesystem:
+    Type: String
+    Default: /dev/xvda1
+    Description: Filesystem to monitor
+
+
+Resources:
+
+# Autoscale group alerting
+
+  DiskUsage:
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmName: !Join 
+        - " | "
+        - - !Ref AWS::StackName
+          - disk-usage-high-alarm
+      AlarmDescription: >-
+        The DiskSpaceUtilization metric measures the used disk space. If this exceeds the threshold set, an alarm will trigger.
+      Namespace: System/Linux
+      MetricName: DiskSpaceUtilization
+      Statistic: Average
+      Period: '60'
+      EvaluationPeriods: '10'
+      Threshold: '95'
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Ref LowPrioritySNSarn
+      OKActions:
+        - !Ref LowPrioritySNSarn
+      ComparisonOperator: GreaterThanThreshold
+      Dimensions:
+      - Name: Filesystem
+        Value: !Ref Filesystem
+#        Value: /dev/xvda1
+      - Name: InstanceId
+        Value: !Ref InstanceId
+#        Value: i-30734fbc
+      - Name: MountPath
+        Value: !Ref MountPath
+#        Value: /
+
+
+# Dashboard creation
+
+# Notification configuration
